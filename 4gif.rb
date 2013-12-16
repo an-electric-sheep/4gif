@@ -7,7 +7,7 @@ MAXSIZE = 3*1024*1024
 
 class GifProcessor
   
-  attr_accessor :dither, :decimate, :global_color_map, :file, :timecodes, :ceiling, :fuzz, :loop
+  attr_accessor :dither, :decimate, :global_color_map, :file, :timecodes, :ceiling, :fuzz, :loop, :crop_bounds
   
   def initialize
     self.ceiling = 1280
@@ -30,6 +30,10 @@ class GifProcessor
 
       opts.on('--maxw N', OptionParser::DecimalInteger, "maximum width to search for (default: 1280)") do |c|
         self.ceiling = c
+      end
+      
+      opts.on('--crop x0,y0,x1,y1', Array, 'Crop source video to the defined rectagle. (zero offset based, full 720p rectangle -> 0,0,1279,719)') do |arr|
+        self.crop_bounds = arr.map(&:to_i)
       end
       
       opts.on( '-h', '--help', 'Display this screen' ) do
@@ -97,10 +101,14 @@ class GifProcessor
         outname = "#{dir}/out#{i}.gif"
         
         framestep = "framestep=#{decimate}," if decimate
+        
+        if crop_bounds
+          crop_filter = "crop=#{crop_bounds[2]-crop_bounds[0]+1}:#{crop_bounds[3]-crop_bounds[1]+1}:#{crop_bounds[0]}:#{crop_bounds[1]},"
+        end
                 
         # resize, decimate frame count, create PNG
         timecodes.each_slice(2).each_with_index do |(start_pos,end_pos),j|
-          system("ffmpeg -v error -accurate_seek -itsoffset '#{start_pos}' -ss '#{start_pos}' -i '#{file}' -ss '#{start_pos}' -to '#{end_pos}' -filter:v hqdn3d=1.5:1.5:6:6,#{framestep}scale='#{current_scale}:-1' -f image2 #{dir}/#{j}_%04d.png")
+          system("ffmpeg -v error -accurate_seek -itsoffset '#{start_pos}' -ss '#{start_pos}' -i '#{file}' -ss '#{start_pos}' -to '#{end_pos}' -filter:v #{crop_filter}hqdn3d=1.5:1.5:6:6,#{framestep}scale='#{current_scale}:-1' -f image2 #{dir}/#{j}_%04d.png")
         end
         
         files = Dir.glob("#{dir}/*.png").sort

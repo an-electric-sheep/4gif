@@ -16,6 +16,7 @@ Available resolution/compression quality tradeoffs:
 Additional features:
 
 * splicing multiple timecode ranges into a single gif
+* cropping
 * forward-rewind loops
 
 RTFM (no, not this one, baka)
