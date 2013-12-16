@@ -13,4 +13,8 @@ Available resolution/compression quality tradeoffs:
 * approximate color substitution (inter-frame fuzzing)
 * per frame palettes/single global color palette
 
+Additional features:
+
+* forward-rewind loops
+
 RTFM (no, not this one, baka)

@@ -7,7 +7,7 @@ MAXSIZE = 3*1024*1024
 
 class GifProcessor
   
-  attr_accessor :dither, :decimate, :global_color_map, :file, :timecodes, :ceiling, :fuzz
+  attr_accessor :dither, :decimate, :global_color_map, :file, :timecodes, :ceiling, :fuzz, :loop
   
   def initialize
     self.ceiling = 1280
@@ -21,7 +21,8 @@ class GifProcessor
       opts.separator "Requirements:\n * ffmpeg\n * gifsicle\n * imagemagick\n * ruby, but you know that already\n * Several gigabytes of ram/swap/tmp space (5+GB in some cases) at higher output resolutions"
       opts.separator ""
       
-      opts.on('-loop', "add a reverse sequence to create a forward-rewind loop [not yet implemented]") do
+      opts.on('-loop', "add a reverse sequence to create a forward-rewind loop") do
+        self.loop = true
       end
       
       opts.on('-pause', "extend last frame duration [not yet implemented]") do
@@ -101,13 +102,18 @@ class GifProcessor
         timecodes.each_slice(2).each_with_index do |(start_pos,end_pos),j|
           system("ffmpeg -v error -accurate_seek -itsoffset '#{start_pos}' -ss '#{start_pos}' -i '#{file}' -ss '#{start_pos}' -to '#{end_pos}' -filter:v hqdn3d=1.5:1.5:6:6,#{framestep}scale='#{current_scale}:-1' -f image2 #{dir}/#{j}_%04d.png")
         end
-        files = Dir.glob("#{dir}/*.png").sort.join(" ")
+        
+        files = Dir.glob("#{dir}/*.png").sort
+        
+        files.concat files.dup.slice(1...-1).reverse if loop
+        
+        files = files.join(" ")
         
         # convert to gif with various optimizations
         system("convert -delay 1x#{decimated_fps} #{files} -coalesce #{'+dither' unless dither} #{'-fuzz 2%' if fuzz} -layers OptimizePlus -layers OptimizeTransparency -layers RemoveDups -layers RemoveZero #{'+map' if global_color_map} #{dir}/tmp#{i}.gif")
         
         # files no longer needed, clean up for next interation
-        system("rm "+files)
+        system("rm #{dir}/*.png")
         
         # even more optimizations
         system("gifsicle -w #{dir}/tmp#{i}.gif -O3 > #{outname}")
