@@ -4,7 +4,7 @@ An optimizing video to gif converter for a certain image board
 
 ---
 
-Goal: Squeeze out maxium quality / resolution out of the 3MiB limit
+Goal: Squeeze maxium quality and/or resolution out of the 3MiB limit
 
 Available resolution/compression quality tradeoffs:
 
@@ -15,6 +15,7 @@ Available resolution/compression quality tradeoffs:
 
 Additional features:
 
+* splicing multiple timecode ranges into a single gif
 * forward-rewind loops
 
 RTFM (no, not this one, baka)

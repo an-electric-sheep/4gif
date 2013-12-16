@@ -21,14 +21,14 @@ class GifProcessor
       opts.separator "Requirements:\n * ffmpeg\n * gifsicle\n * imagemagick\n * ruby, but you know that already\n * Several gigabytes of ram/swap/tmp space (5+GB in some cases) at higher output resolutions"
       opts.separator ""
       
-      opts.on('-loop', "add a reverse sequence to create a forward-rewind loop") do
+      opts.on('-l','--loop', "create a forward-rewind loop") do
         self.loop = true
       end
       
-      opts.on('-pause', "extend last frame duration [not yet implemented]") do
+      opts.on('--pause', "extend last frame duration [not yet implemented]") do
       end
 
-      opts.on('-maxw N', OptionParser::DecimalInteger, "maximum width to search for (default: 1280)") do |c|
+      opts.on('--maxw N', OptionParser::DecimalInteger, "maximum width to search for (default: 1280)") do |c|
         self.ceiling = c
       end
       
@@ -41,20 +41,20 @@ class GifProcessor
       opts.separator ""
 
             
-      opts.on('-nofuzz', "Disable approximate inter-frame color->transparencz substitution. may improve quality, increases file size") do
+      opts.on('--nofuzz', "Disable approximate inter-frame color->transparency substitution. may improve quality, increases file size") do
         self.fuzz = false
       end
       
      
-      opts.on('-decimate [N]',:OPTIONAL, OptionParser::DecimalInteger, "Reduce framerate by a factor of N (3 if none given). Reduces filesize. May make content more stuttery. Useful for animated content that has fewer key animation frames than video FPS") do |d|
-        self.decimate = d
+      opts.on('-d','--decimate [N]', OptionParser::DecimalInteger, "Reduce framerate by a factor of N (3 if none given). Reduces filesize. May make content more stuttery. Useful for animated content that has fewer key animation frames than video FPS") do |d|
+        self.decimate = d || 3
       end
       
-      opts.on('-global', "Force single global color map. Reduces file size. Good for a single scene of animated content where every frame uses a similar color palette. May lead to horrible coloring.") do
+      opts.on('-g','--global', "Force single global color map. Reduces file size. Good for a single scene of animated content where every frame uses a similar color palette. May lead to horrible coloring.") do
         self.global_color_map = true
       end
       
-      opts.on('-dither', 'Enable dithering. Reduces banding. Increases filesize') do
+      opts.on('--dither', 'Enable dithering. Reduces banding. Increases filesize') do
         self.dither = true
       end
       
