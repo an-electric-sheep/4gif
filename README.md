@@ -17,6 +17,7 @@ Additional features:
 
 * splicing multiple timecode ranges into a single gif
 * cropping
+* change playback speed
 * forward-rewind loops
 
 RTFM (no, not this one, baka)

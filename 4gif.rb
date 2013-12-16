@@ -7,11 +7,12 @@ MAXSIZE = 3*1024*1024
 
 class GifProcessor
   
-  attr_accessor :dither, :decimate, :global_color_map, :file, :timecodes, :ceiling, :fuzz, :loop, :crop_bounds
+  attr_accessor :dither, :decimate, :global_color_map, :file, :timecodes, :ceiling, :fuzz, :loop, :crop_bounds, :speed
   
   def initialize
     self.ceiling = 1280
     self.fuzz = true
+    self.speed = 1
   end
   
   def configure(args)
@@ -34,6 +35,10 @@ class GifProcessor
       
       opts.on('--crop x0,y0,x1,y1', Array, 'Crop source video to the defined rectagle. (zero offset based, full 720p rectangle -> 0,0,1279,719)') do |arr|
         self.crop_bounds = arr.map(&:to_i)
+      end
+      
+      opts.on('--speed F', Float, 'Speed up animation by given factor (values < 1 for slowdown)') do |f|
+        self.speed = f
       end
       
       opts.on( '-h', '--help', 'Display this screen' ) do
@@ -89,9 +94,16 @@ class GifProcessor
       good = [nil,0]
       
       fps = `ffmpeg -i '#{file}' 2>&1`[/([\d.]+) fps/,1].to_f
-      decimated_fps = (fps/(decimate || 1)).round
+      decimated_fps = (speed*fps/(decimate || 1)).round
 
-      # modified binary search for largest possible file
+      
+      if crop_bounds
+        crop_filter = "crop=#{crop_bounds[2]-crop_bounds[0]+1}:#{crop_bounds[3]-crop_bounds[1]+1}:#{crop_bounds[0]}:#{crop_bounds[1]},"
+        # limit max width when cropping
+        self.ceiling= [ceiling,crop_bounds[2]-crop_bounds[0]+2].min
+      end
+      
+      # binary search for largest possible file
       while(true)
         
         current_scale = (ceiling+floor)/2
@@ -102,13 +114,9 @@ class GifProcessor
         
         framestep = "framestep=#{decimate}," if decimate
         
-        if crop_bounds
-          crop_filter = "crop=#{crop_bounds[2]-crop_bounds[0]+1}:#{crop_bounds[3]-crop_bounds[1]+1}:#{crop_bounds[0]}:#{crop_bounds[1]},"
-        end
-                
         # resize, decimate frame count, create PNG
         timecodes.each_slice(2).each_with_index do |(start_pos,end_pos),j|
-          system("ffmpeg -v error -accurate_seek -itsoffset '#{start_pos}' -ss '#{start_pos}' -i '#{file}' -ss '#{start_pos}' -to '#{end_pos}' -filter:v #{crop_filter}hqdn3d=1.5:1.5:6:6,#{framestep}scale='#{current_scale}:-1' -f image2 #{dir}/#{j}_%04d.png")
+          system("ffmpeg -v error -accurate_seek -itsoffset '#{start_pos}' -ss '#{start_pos}' -i '#{file}' -ss '#{start_pos}' -to '#{end_pos}' -filter:v #{crop_filter}hqdn3d=1.5:1.5:6:6,#{framestep}scale='w=#{current_scale}:h=-1:out_range=pc:flags=lanczos' -f image2 #{dir}/#{j}_%04d.png")
         end
         
         files = Dir.glob("#{dir}/*.png").sort
