@@ -5,11 +5,16 @@ module FourGif
       @args = args
     end
     
-    def parse(arr)
+    def defaults
       config = OpenStruct.new
       config.fuzz = true
       config.speed = 1.0
       config.max_width = 1280
+      config
+    end
+    
+    def parse(arr)
+      config = OpenStruct.new
       
       # dummy parser for now to get things running
       parser = OptionParser.new do |opts|
@@ -78,7 +83,7 @@ module FourGif
       global_opts = parse @args
       
       sequences = SequenceSet.new
-      sequences.global_config = global_opts
+      sequences.global_config = OpenStruct.new(defaults.to_h.merge(global_opts.to_h))
       
       current_file = nil
       current_sequence = nil
@@ -96,6 +101,7 @@ module FourGif
             sequence.timestamps(@args.shift, @args.shift)
                     
             sequence_opts = parse @args
+            sequence.set_opts defaults
             sequence.set_opts global_opts
             sequence.set_opts file_opts
             sequence.set_opts sequence_opts 
@@ -106,6 +112,7 @@ module FourGif
             sequence = sequences.add(current_file)
                     
             sequence_opts = parse @args
+            sequence.set_opts defaults
             sequence.set_opts global_opts
             sequence.set_opts file_opts
             sequence.set_opts sequence_opts          
