@@ -38,7 +38,7 @@ class GifProcessor
           break if target_width == floor
           
           set.generate_raws(target_width)
-          set.generate_global_color_map
+          set.generate_color_map
           set.generate_optimized
           
           merged_name = set.merge

@@ -2,7 +2,7 @@ module FourGif
   class SequenceSet
     
     attr_reader :sequences
-    attr_accessor :iteration, :files, :color_map, :global_config
+    attr_accessor :iteration, :files, :global_config
     
     def initialize
       @sequences = []
@@ -20,12 +20,20 @@ module FourGif
       sequences.map{|s| Thread.new{s.generate_raw_images(width)}}.each{|t| t.join}
     end
     
-    def generate_global_color_map
-      to_map = sequences.select{|s| s.config.global_color_map}.flat_map(&:files)
+    def generate_color_map
+      # only calculate global color map once from initial iteration, should be 'good enough'
+      # run in background until it's needed
+      @map_worker ||= Thread.new do
+        to_map = sequences.select{|s| s.config.global_color_map}.flat_map(&:files)
         
-      system "convert #{to_map.join ' '} -background none +append -quantize transparent  -colors 255 -unique-colors colors#{iteration}.gif" if to_map.any?
+        system "convert #{to_map.join ' '} -background none +append -quantize transparent -colors #{global_config.colors} -unique-colors colors.gif" if to_map.any?
       
-      self.color_map = "colors#{iteration}.gif"
+        "colors.gif"
+      end
+    end
+    
+    def color_map
+      generate_color_map.value
     end
     
     def generate_optimized
@@ -47,7 +55,7 @@ module FourGif
     
     def process(width)
       sequences.each{|s| s.generate_raw_images(width)}
-      generate_global_color_map
+      generate_color_map
       generate_subsequences
       merge
     end

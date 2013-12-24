@@ -10,6 +10,7 @@ module FourGif
       config.fuzz = true
       config.speed = 1.0
       config.max_width = 1280
+      config.colors = 255
       config
     end
     
@@ -61,10 +62,15 @@ module FourGif
           config.decimate = d || 3
         end
         
-        opts.on('-g','--global', "Force single global color map. Reduces file size. Good for a single scene of animated content where every frame uses a similar color palette. May lead to horrible coloring.") do
+        opts.on('-g','--global [N]', OptionParser::DecimalInteger, "Force single global color map. Reduces file size. Good for a single scene of animated content where every frame uses a similar color palette. May lead to horrible coloring.") do |colors|
+          config.colors = colors || 255
           config.global_color_map = true
         end
-        
+               
+        opts.on('--odither [pattern]', 'Enable ordered dithering. Reduces banding. Increases filesize') do |order|
+          config.ordered_dither = order
+        end
+         
         opts.on('--dither', 'Enable dithering. Reduces banding. Increases filesize') do
           config.dither = true
         end

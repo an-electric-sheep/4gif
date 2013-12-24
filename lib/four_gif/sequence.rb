@@ -1,5 +1,6 @@
 # represents an image-sequence which will be part of the final image
 require 'securerandom'
+require 'shellwords'
 require 'ostruct'
 
 class FourGif::Sequence
@@ -10,7 +11,10 @@ class FourGif::Sequence
   def initialize(set,filename)
     @set = set
     @input_file = filename
-    @type = `file -b --mime-type '#{filename}'`
+    
+    IO.popen(["file", "-b", "--mime-type", filename]) do |io|
+      @type = io.read
+    end
     @config = OpenStruct.new
   end
   
@@ -31,14 +35,16 @@ class FourGif::Sequence
       
       framestep = "framestep=#{config.decimate}," if config.decimate
 
-      fps = `ffmpeg -i '#{input_file}' 2>&1`[/([\d.]+) fps/,1].to_f
+      fps = `ffmpeg -i #{input_file.shellescape} 2>&1`[/([\d.]+) fps/,1].to_f
 
       self.fps = 1.0*fps/(config.decimate || 1)
         
       
-      system("ffmpeg -v error -accurate_seek -itsoffset '#{start_t}' -ss '#{start_t}' -i '#{input_file}' -ss '#{start_t}' -to '#{end_t}' -filter:v #{crop_filter}hqdn3d=1.5:1.5:6:6,#{framestep}scale='w=#{width}:h=-1:out_range=pc:flags=lanczos' -f image2 #{uuid}_%04d.png")
+      system("ffmpeg -v error -accurate_seek -itsoffset '#{start_t}' -ss '#{start_t}' -i #{input_file.shellescape} -ss '#{start_t}' -to '#{end_t}' -filter:v #{crop_filter}hqdn3d=1.5:1.5:6:6,#{framestep}scale='w=#{width}:h=-1:out_range=pc:flags=lanczos' -f image2 #{uuid}_%04d.png")
     when /image/
-      system("convert '#{input_file}' -resize #{width} #{uuid}.png") 
+      system("convert '#{input_file}' -resize #{width} #{uuid}.png")
+    else
+      raise "could not detect file supported type for #{input_file.shellescape}, got '#{type}'"      
     end
   end
   
@@ -60,14 +66,14 @@ class FourGif::Sequence
     name = "#{uuid}.gif"
     
     # perform opts before color mapping
-    system("convert #{initial_frame} #{middle_frames} #{last_frame} -coalesce #{'-fuzz 2%' if config.fuzz} -layers OptimizePlus -layers OptimizeTransparency #{uuid}1.miff")
+    system("convert #{initial_frame} #{middle_frames} #{last_frame} -coalesce -fuzz 10% -layers RemoveDups -fuzz 0% #{'-fuzz 2%' if config.fuzz} -layers OptimizePlus -layers OptimizeTransparency #{uuid}1.miff")
     
-    if config.global_color_map
-      map = " -map #{set.color_map}"
-    end 
+    
+    map = " -map #{set.color_map}" if config.global_color_map
+    odither = "-ordered-dither #{config.ordered_dither}" if config.ordered_dither 
     
     # dither and apply color map if appropriate
-    system("convert #{uuid}1.miff #{'+dither' unless config.dither} #{map} #{name}")
+    system("convert #{uuid}1.miff #{'+dither' unless config.dither} #{odither} #{map} #{name}")
         
     self.optimized = name
   end
