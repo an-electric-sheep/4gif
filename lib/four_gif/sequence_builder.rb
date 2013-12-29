@@ -53,8 +53,8 @@ module FourGif
         opts.separator ""
   
               
-        opts.on('--nofuzz', "Disable approximate inter-frame color->transparency substitution. may improve quality, increases file size") do
-          config.fuzz = false
+        opts.on('--fuzz N', OptionParser::DecimalInteger, "Set fuzz factor (see imagemagick docs) for OptimizeTransparency. default = 2. lower values may improve quality, increase file size") do |n|
+          config.fuzz = n
         end
         
        

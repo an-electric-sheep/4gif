@@ -4,6 +4,7 @@ require 'tmpdir'
 require 'optparse'
 
 module FourGif
+  require_relative 'lib/four_gif/spawn'
   require_relative 'lib/four_gif/sequence_builder'
   require_relative 'lib/four_gif/sequence_set'
   require_relative 'lib/four_gif/sequence'

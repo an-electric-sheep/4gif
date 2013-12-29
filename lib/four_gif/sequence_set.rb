@@ -26,7 +26,7 @@ module FourGif
       @map_worker ||= Thread.new do
         to_map = sequences.select{|s| s.config.global_color_map}.flat_map(&:files)
         
-        system "convert #{to_map.join ' '} -background none +append -quantize transparent -colors #{global_config.colors} -unique-colors colors.gif" if to_map.any?
+        FourGif::Spawn.call "convert #{to_map.join ' '} -background none +append -quantize transparent -colors #{global_config.colors} -unique-colors colors.gif" if to_map.any?
       
         "colors.gif"
       end
@@ -45,10 +45,10 @@ module FourGif
     def merge
       self.iteration += 1
       
-      system("convert #{files.join(' ')} -layers RemoveDups -layers RemoveZero tmp#{iteration}.gif")
+      FourGif::Spawn.call("convert #{files.join(' ')} -layers RemoveDups -layers RemoveZero tmp#{iteration}.gif")
       
       # even more optimizations
-      system("gifsicle -w tmp#{iteration}.gif -O3 > out#{iteration}.gif")
+      FourGif::Spawn.call("gifsicle -w tmp#{iteration}.gif -O3 > out#{iteration}.gif")
       
       "out#{iteration}.gif"
     end
