@@ -42,7 +42,7 @@ class FourGif::Sequence
       
       FourGif::Spawn.call("ffmpeg -v error -accurate_seek -itsoffset '#{start_t}' -ss '#{start_t}' -i #{input_file.shellescape} -ss '#{start_t}' -to '#{end_t}' -filter:v #{crop_filter}hqdn3d=1.5:1.5:6:6,#{framestep}scale='w=#{width}:h=-1:out_range=pc:flags=lanczos' -f image2 #{uuid}_%04d.png")
     when /image/
-        FourGif::Spawn.call("convert '#{input_file}' -resize #{width} #{uuid}.png")
+      FourGif::Spawn.call("convert '#{input_file}' -resize #{width} #{uuid}.png")
     else
       raise "could not detect file supported type for #{input_file.shellescape}, got '#{type}'"      
     end
