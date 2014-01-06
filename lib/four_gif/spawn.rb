@@ -10,7 +10,9 @@ module FourGif
         output = io.read
       end
       
-      puts output if $? != 0 && output && output.length > 0
+      if $? != 0 && output && output.length > 0
+        raise output
+      end 
                   
     end
     

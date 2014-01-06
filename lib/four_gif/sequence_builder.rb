@@ -63,7 +63,8 @@ module FourGif
         end
         
         opts.on('-g','--global [N]', OptionParser::DecimalInteger, "Force single global color map. Reduces file size. Good for a single scene of animated content where every frame uses a similar color palette. May lead to horrible coloring.") do |colors|
-          config.colors = colors || 255
+          config.colors = colors
+          config.colors = 255 if colors == 0 || colors.nil?
           config.global_color_map = true
         end
                
