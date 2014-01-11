@@ -65,15 +65,18 @@ class FourGif::Sequence
     
     name = "#{uuid}.gif"
     
+    fuzz = config.fuzz ? "-fuzz #{config.fuzz}%" : '-fuzz 2%'
+    
     # perform opts before color mapping
-    FourGif::Spawn.call("convert #{initial_frame} #{middle_frames} #{last_frame} -coalesce -fuzz 10% -layers RemoveDups -fuzz 0% #{'-fuzz 2%' if config.fuzz} -layers OptimizePlus -layers OptimizeTransparency #{uuid}1.miff")
+    FourGif::Spawn.call("convert #{initial_frame} #{middle_frames} #{last_frame} -coalesce -fuzz 10% -layers RemoveDups #{fuzz} -layers OptimizePlus -layers OptimizeTransparency #{uuid}1.miff")
     
     
-    map = " -map #{set.color_map}" if config.global_color_map
+    map = " -remap #{set.color_map}" if config.global_color_map
+    dither = config.dither ? "-dither FloydSteinberg" : "+dither"
     odither = "-ordered-dither #{config.ordered_dither}" if config.ordered_dither 
     
     # dither and apply color map if appropriate
-    FourGif::Spawn.call("convert #{uuid}1.miff #{'+dither' unless config.dither} #{odither} #{map} #{name}")
+    FourGif::Spawn.call("convert #{uuid}1.miff -background none #{dither} #{odither} #{map} #{name}")
         
     self.optimized = name
   end
