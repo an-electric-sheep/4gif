@@ -28,9 +28,9 @@ module FourGif
           
         raise "too many colors" if global_config.colors > 255
         
-        FourGif::Spawn.call "convert #{to_map.join ' '} -background none +dither +append -quantize transparent -colors #{global_config.colors} -unique-colors null: +append colors.gif" if to_map.any?
+        FourGif::Spawn.call "convert #{to_map.join ' '} -alpha set -treedepth 8 +depth -colorspace Lab -background none +dither +append -quantize Lab -colors #{global_config.colors} -unique-colors null: +append colors.miff" if to_map.any?
       
-        "colors.gif"
+        "colors.miff"
       end
     end
     

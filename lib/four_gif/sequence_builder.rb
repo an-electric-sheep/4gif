@@ -7,7 +7,7 @@ module FourGif
     
     def defaults
       config = OpenStruct.new
-      config.fuzz = true
+      config.fuzz = 2
       config.speed = 1.0
       config.max_width = 1280
       config.colors = 255

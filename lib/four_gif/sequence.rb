@@ -68,15 +68,17 @@ class FourGif::Sequence
     fuzz = config.fuzz ? "-fuzz #{config.fuzz}%" : '-fuzz 2%'
     
     # perform opts before color mapping
-    FourGif::Spawn.call("convert #{initial_frame} #{middle_frames} #{last_frame} -coalesce -fuzz 10% -layers RemoveDups #{fuzz} -layers OptimizePlus -layers OptimizeTransparency #{uuid}1.miff")
+    FourGif::Spawn.call("convert #{initial_frame} #{middle_frames} #{last_frame} -alpha set -treedepth 8 +depth -colorspace Lab -coalesce -fuzz 10% -layers RemoveDups #{fuzz} -layers OptimizePlus -layers OptimizeTransparency #{uuid}1.miff")
     
     
-    map = " -remap #{set.color_map}" if config.global_color_map
+    map = " -remap #{set.color_map}" if config.global_color_map 
     dither = config.dither ? "-dither FloydSteinberg" : "+dither"
     odither = "-ordered-dither #{config.ordered_dither}" if config.ordered_dither 
     
     # dither and apply color map if appropriate
-    FourGif::Spawn.call("convert #{uuid}1.miff -background none #{dither} #{odither} #{map} #{name}")
+    #t = Thread.new{FourGif::Spawn.call("convert #{uuid}1.miff +depth -treedepth 8 -background none -alpha Background -quantize Lab #{dither} #{odither} #{map} -colorspace sRGB -depth 8 +adjoin inspect#{uuid}%04d.png")}
+    FourGif::Spawn.call("convert #{uuid}1.miff +depth -treedepth 8 -background none -alpha Background -quantize Lab #{dither} #{odither} #{map} -colorspace sRGB -depth 8 #{name}")
+    #t.join
         
     self.optimized = name
   end

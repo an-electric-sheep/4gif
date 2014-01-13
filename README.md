@@ -15,6 +15,7 @@ Available resolution/compression quality tradeoffs:
 
 Additional features:
 
+* color reduction/dithering is performed in L*a*b* color space for psychovisually optimal results
 * splicing multiple timecode ranges from multiple videos into a single gif
 * parallel processing of ranges where possible
 * resolution/quality tradeoffs can be configured separately for each range 
