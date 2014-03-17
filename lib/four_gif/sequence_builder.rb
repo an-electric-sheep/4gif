@@ -53,7 +53,7 @@ module FourGif
         opts.separator ""
   
               
-        opts.on('--fuzz N', OptionParser::DecimalInteger, "Set fuzz factor (see imagemagick docs) for OptimizeTransparency. default = 2. lower values may improve quality, increase file size") do |n|
+        opts.on('--fuzz N', OptionParser::DecimalNumeric, "Set fuzz factor (see imagemagick docs) for OptimizeTransparency. default = 2. lower values may improve quality, increase file size") do |n|
           config.fuzz = n
         end
         
